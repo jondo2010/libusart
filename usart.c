@@ -16,30 +16,30 @@
 
 // RX buffer (circular)
 
-static 			uint8_t		*rx_buf;		// buffer ptr
-static volatile	uint8_t		*rx_start;		// start of valid data ptr
-static volatile	uint8_t 	*rx_end;		// end of valid data ptr
+static 			uint8_t		rx_buf[RX_BUF_LEN];		// buffer ptr
+static volatile	uint8_t		*rx_start = rx_buf;		// start of valid data ptr
+static volatile	uint8_t 	*rx_end = rx_buf;		// end of valid data ptr
 
-static volatile uint16_t 	rx_read_count;	// total elements read
-static volatile uint16_t	rx_write_count;	// total elements written
+static volatile uint16_t 	rx_read_count = 0;		// total elements read
+static volatile uint16_t	rx_write_count = 0;		// total elements written
 
 // TX buffer (circular)
 
-static 			uint8_t		*tx_buf;		// buffer ptr
-static volatile	uint8_t		*tx_start;		// start of valid data ptr
-static volatile	uint8_t 	*tx_end;		// end of valid data ptr
+static 			uint8_t		tx_buf[TX_BUF_LEN];		// buffer ptr
+static volatile	uint8_t		*tx_start = tx_buf;		// start of valid data ptr
+static volatile	uint8_t 	*tx_end = tx_buf;		// end of valid data ptr
 
-static volatile uint16_t 	tx_read_count;	// total elements read
-static volatile uint16_t	tx_write_count;	// total elements written
+static volatile uint16_t 	tx_read_count = 0;		// total elements read
+static volatile uint16_t	tx_write_count = 0;		// total elements written
 
 // Callback function pointers
 
-static void (*rx_byte_callback)		(uint8_t byte);
-static void	(*rx_newline_callback)	(void);
-static void	(*rx_error_callback)	(void);
-static void	(*rx_full_callback)		(void);
-static void	(*rx_overrun_callback)	(void);
-static void	(*tx_complete_callback)	(void);
+static void (*rx_byte_callback)		(uint8_t byte)	= 0;
+static void	(*rx_newline_callback)	(void)			= 0;
+static void	(*rx_error_callback)	(void)			= 0;
+static void	(*rx_full_callback)		(void)			= 0;
+static void	(*rx_overrun_callback)	(void)			= 0;
+static void	(*tx_complete_callback)	(void)			= 0;
 
 //
 //	This interrupt is fired when a new byte is received.
@@ -47,11 +47,10 @@ static void	(*tx_complete_callback)	(void);
 
 ISR (USART_RX_vect)
 {
-	uint8_t status, data;
-	int8_t	buf_full, buf_overrun;
-
- 	status = UCSR0A; /* 1 */
-	data   = UDR0;
+	uint8_t status 		= UCSR0A; /* 1 */
+	uint8_t data		= UDR0;
+	int8_t	buf_full 	= rx_write_count - rx_read_count == RX_BUF_LEN - 1;
+	int8_t 	buf_overrun = rx_write_count - rx_read_count == RX_BUF_LEN;
 
 	if (status & (_BV (DOR0) | _BV (FE0) | _BV (UPE0)))
 	{
@@ -59,9 +58,6 @@ ISR (USART_RX_vect)
 			rx_error_callback ();
 		reti ();
 	}
-
-	buf_full 	= rx_write_count - rx_read_count == RX_BUF_LEN - 1;
-	buf_overrun = rx_write_count - rx_read_count == RX_BUF_LEN;
 
 	if (buf_overrun)
 	{
@@ -133,27 +129,14 @@ ISR (USART_UDRE_vect)
 void
 usart0_init
 (
-	uint32_t	baud_rate
+	uint32_t baud_rate
 )
 {
 	UBRR0 = (uint16_t)(F_CPU / 16 / baud_rate) - 1; /* 1 */
-
-	rx_buf = (uint8_t *) malloc (sizeof(uint8_t) * RX_BUF_LEN);
-	rx_start = rx_end = rx_buf;
-	rx_read_count = rx_write_count = 0;
-
-	tx_buf = (uint8_t *) malloc (sizeof(uint8_t) * TX_BUF_LEN);
-	tx_start = tx_end = tx_buf;
-	tx_read_count = tx_write_count = 0;
-
-	if (rx_buf == 0 || tx_buf == 0)	/* 2 */
-		exit (-1);
 }
 
 //
 //	1.	The bit-rate prescaler formula is given in the datasheet.
-//	2.	If malloc fails, operation is unpredicable. So we halt to prevent
-//		anything bad from happening.
 //
 
 void
