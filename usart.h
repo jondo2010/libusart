@@ -52,6 +52,12 @@ usart0_init
 	uint32_t	baud_rate
 );
 
+void
+usart1_init
+(
+	uint32_t	baud_rate
+);
+
 //
 //	Enable the receiver portion of the USART. The RX buffer is not touched by
 //	this operation.
@@ -59,6 +65,9 @@ usart0_init
 
 void
 usart0_enable_rx ();
+
+void
+usart1_enable_rx ();
 
 //
 //	Disable the receiver portion of the USART. The RX buffer is not touched by
@@ -68,6 +77,9 @@ usart0_enable_rx ();
 void
 usart0_disable_rx ();
 
+void
+usart1_disable_rx ();
+
 //
 //	Enable the transmitter portion of the USART. The TX buffer is not touched by
 //	this operation.
@@ -76,6 +88,9 @@ usart0_disable_rx ();
 void
 usart0_enable_tx ();
 
+void
+usart1_enable_tx ();
+
 //
 //	Disable the transmitter portion of the USART. The TX buffer is not touched by
 //	this operation.
@@ -83,6 +98,9 @@ usart0_enable_tx ();
 
 void
 usart0_disable_tx ();
+
+void
+usart1_disable_tx ();
 
 //
 //	Read at most `n' bytes from the RX buffer into the buffer pointed to by
@@ -101,6 +119,14 @@ usart0_disable_tx ();
 
 uint16_t
 usart0_read_from_rx_buf
+(
+	uint8_t		*dst,
+	uint16_t	n,
+	int8_t		append_null
+);
+
+uint16_t
+usart1_read_from_rx_buf
 (
 	uint8_t		*dst,
 	uint16_t	n,
@@ -126,12 +152,22 @@ usart0_write_to_tx_buf
 	uint16_t	n
 );
 
+uint16_t
+usart1_write_to_tx_buf
+(
+	uint8_t		*src,
+	uint16_t	n
+);
+
 //
 //	Return the number of bytes free in the RX buffer.
 //
 
 uint16_t
 usart0_rx_bytes_free ();
+
+uint16_t
+usart1_rx_bytes_free ();
 
 //
 //	Return the number of bytes free in the TX buffer.
@@ -140,6 +176,9 @@ usart0_rx_bytes_free ();
 uint16_t
 usart0_tx_bytes_free ();
 
+uint16_t
+usart1_tx_bytes_free ();
+
 //
 //	Flush the RX buffer. All data is lost.
 //
@@ -147,12 +186,18 @@ usart0_tx_bytes_free ();
 void
 usart0_flush_rx_buf ();
 
+void
+usart1_flush_rx_buf ();
+
 //
 //	Flush the TX buffer. All data is lost.
 //
 
 void
 usart0_flush_tx_buf ();
+
+void
+usart1_flush_tx_buf ();
 
 //
 //	Set the function that will called whenever a new byte is received. The
@@ -163,6 +208,12 @@ usart0_flush_tx_buf ();
 
 void
 usart0_set_rx_byte_callback
+(
+	void (*callback_func)(uint8_t byte)
+);
+
+void
+usart1_set_rx_byte_callback
 (
 	void (*callback_func)(uint8_t byte)
 );
@@ -180,6 +231,12 @@ usart0_set_rx_byte_callback
 
 void
 usart0_set_rx_newline_callback
+(
+	void (*callback_func)(void)
+);
+
+void
+usart1_set_rx_newline_callback
 (
 	void (*callback_func)(void)
 );
@@ -211,6 +268,12 @@ usart0_set_rx_error_callback
 	void (*callback_func)(void)
 );
 
+void
+usart1_set_rx_error_callback
+(
+	void (*callback_func)(void)
+);
+
 //
 //	Set the function that will called whenever the rx buffer is full.
 //
@@ -219,6 +282,12 @@ usart0_set_rx_error_callback
 
 void
 usart0_set_rx_full_callback
+(
+	void (*callback_func)(void)
+);
+
+void
+usart1_set_rx_full_callback
 (
 	void (*callback_func)(void)
 );
@@ -237,6 +306,12 @@ usart0_set_rx_overrun_callback
 	void (*callback_func)(void)
 );
 
+void
+usart1_set_rx_overrun_callback
+(
+	void (*callback_func)(void)
+);
+
 //
 //	Set the function that will called whenever the transmission has completed
 //	and the buffer is now empty.
@@ -246,6 +321,12 @@ usart0_set_rx_overrun_callback
 
 void
 usart0_set_tx_complete_callback
+(
+	void 		(*callback_func)(void)
+);
+
+void
+usart1_set_tx_complete_callback
 (
 	void 		(*callback_func)(void)
 );
